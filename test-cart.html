@@ -98,6 +98,13 @@
   // 白貴賓狗反轉
   t('貴賓狗 180 反轉', document.getElementById('gif-poodle').style.transform === 'scaleX(-1)');
 
+
+  // 訂單通知店主
+  t('mailto 按鈕存在', !!document.getElementById('order-mail'));
+  t('shop email 設定', window.SCENE.shop.email === 'chennienying@gmail.com');
+  // mailto 內容（攔截 location 不可行，改驗 lastOrderText 已存在於 textarea）
+  t('訂單文存在可寄', document.getElementById('order-text').value.indexOf('訂單編號') >= 0);
+
   document.getElementById('result').textContent = R.join('\n');
   document.title = R.filter(function(r){return r.indexOf('FAIL')===0;}).length + '-FAILS';
 })();

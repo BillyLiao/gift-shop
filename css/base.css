@@ -394,6 +394,7 @@ html, body {
 #checkout-error { color: #c00000; font-size: 13px; min-height: 1.2em; margin: 4px 0; }
 
 #cart-view-done .done-mark { font-size: 18px; margin: 4px 0; }
+#notify-status { font-size: 13px; margin: 6px 0 0; color: #006400; min-height: 1.2em; }
 #order-text {
   width: 100%;
   border: 2px inset #808080;

@@ -60,3 +60,11 @@ window.SCENE.artist = {
     "買不買沒關係，門口地毯踩一下再走，算來過。"
   ]
 };
+
+/* 店家設定：訂單通知 */
+window.SCENE.shop = {
+  email: "chennienying@gmail.com",
+  /* Web3Forms access key（https://web3forms.com 用上面的 email 免費領取）。
+     填入後訂單成立會自動寄信到店主信箱；留空則只有買家手動寄信/複製。 */
+  web3formsKey: ""
+};

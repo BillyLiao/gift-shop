@@ -129,8 +129,10 @@ window.Cart = (function () {
         '<p>訂單編號 <strong id="order-no"></strong></p>' +
         '<textarea id="order-text" rows="9" readonly></textarea>' +
         '<p class="cart-hint">金流尚未開通——請按下方按鈕複製訂單內容，傳給店主完成付款與出貨。</p>' +
+        '<p id="notify-status"></p>' +
         '<div class="cart-actions">' +
           '<button type="button" class="w95-btn" id="order-copy">複製訂單內容</button>' +
+          '<button type="button" class="w95-btn" id="order-mail">✉️ 寄訂單給店主</button>' +
           '<button type="button" class="w95-btn primary" id="done-close">回到店裡</button>' +
         '</div>' +
       '</div>' +
@@ -396,6 +398,7 @@ window.Cart = (function () {
 
     orderNoEl.textContent = no;
     orderTextEl.value = lines.join("\n");
+    notifyShop(no, lines.join("\n"), info);
 
     /* 信用卡 → 綠界測試環境（新分頁）；貨到付款 → 直接成立 */
     var doneHint = win.querySelector("#cart-view-done .cart-hint");
@@ -416,6 +419,44 @@ window.Cart = (function () {
     items = []; persist(items); renderBadge();
     show("done");
   }
+
+  /* ---- 訂單通知店主 ----
+     1) Web3Forms 自動寄信（config 填了 web3formsKey 才會啟用）
+     2) mailto 按鈕：買家手動寄（永遠可用的備援） */
+  var shopCfg = (window.SCENE && window.SCENE.shop) || {};
+  var notifyEl = win.querySelector("#notify-status");
+  var lastOrderText = "";
+
+  function notifyShop(no, text, info) {
+    lastOrderText = text;
+    notifyEl.textContent = "";
+    if (!shopCfg.web3formsKey) return; /* 未設定自動寄信 → 靠複製/mailto */
+    notifyEl.textContent = "訂單通知寄送中…";
+    fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_key: shopCfg.web3formsKey,
+        subject: "【新訂單】" + no,
+        from_name: info.name,
+        replyto: info.email,
+        message: text,
+      }),
+    }).then(function (r) { return r.json(); }).then(function (r) {
+      notifyEl.textContent = r.success
+        ? "✅ 訂單已自動寄給店主"
+        : "⚠️ 自動通知失敗——請用下方按鈕把訂單寄給店主";
+    }).catch(function () {
+      notifyEl.textContent = "⚠️ 自動通知失敗——請用下方按鈕把訂單寄給店主";
+    });
+  }
+
+  win.querySelector("#order-mail").addEventListener("click", function () {
+    var no = orderNoEl.textContent;
+    location.href = "mailto:" + (shopCfg.email || "") +
+      "?subject=" + encodeURIComponent("【新訂單】" + no) +
+      "&body=" + encodeURIComponent(lastOrderText);
+  });
 
   win.querySelector("#order-copy").addEventListener("click", function () {
     var btn = this;
