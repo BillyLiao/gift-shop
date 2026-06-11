@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>訂單查詢 — 歡迎光臨</title>
+<link rel="stylesheet" href="css/base.css">
+<style>
+  body { background: #2a4a3f; padding: 24px; }
+  .panel {
+    max-width: 560px; margin: 0 auto; background: #c0c0c0;
+    border-top: 2px solid #fff; border-left: 2px solid #fff;
+    border-right: 2px solid #404040; border-bottom: 2px solid #404040;
+    box-shadow: 4px 4px 0 rgba(0,0,0,.4);
+    font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  }
+  .panel-body { padding: 16px; font-size: 14px; }
+  label { display: block; margin: 8px 0; }
+  input, textarea { display: block; width: 100%; margin-top: 3px; padding: 6px;
+    border: 2px inset #808080; font-family: inherit; font-size: 14px; }
+  #q-err { color: #c00000; font-size: 13px; min-height: 1.2em; }
+  #result { display: none; margin-top: 14px; background: #fff;
+    border: 2px inset #808080; padding: 12px; }
+  #result.show { display: block; }
+  .timeline { display: flex; gap: 0; margin: 12px 0; }
+  .tl-step { flex: 1; text-align: center; font-size: 12px; color: #999; position: relative; }
+  .tl-step::before { content: "○"; display: block; font-size: 16px; }
+  .tl-step.done { color: #0a5239; font-weight: bold; }
+  .tl-step.done::before { content: "●"; }
+  .tl-step.cancel { color: #92175c; font-weight: bold; }
+  .tl-step.cancel::before { content: "✕"; }
+  .r-row { font-size: 13px; margin: 3px 0; }
+  .r-row b { color: #555; font-weight: normal; }
+  #ret-box { border-top: 1px solid #ccc; margin-top: 12px; padding-top: 10px; display: none; }
+  #ret-box.show { display: block; }
+  #ret-msg { font-size: 13px; min-height: 1.2em; margin-top: 6px; }
+  .back { display: inline-block; margin-top: 12px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="panel">
+  <div class="dlg-titlebar"><span>訂單查詢／退貨申請</span></div>
+  <div class="panel-body">
+    <label>訂單編號<input id="q-no" type="text" placeholder="CH-20260612-XXXX"></label>
+    <label>訂購時的 Email<input id="q-email" type="email"></label>
+    <p id="q-err"></p>
+    <button class="w95-btn primary" id="q-btn">查詢</button>
+
+    <div id="result">
+      <h3 id="r-no" style="margin:0 0 6px;font-size:15px"></h3>
+      <div class="timeline" id="timeline"></div>
+      <div id="r-rows"></div>
+      <div id="ret-box">
+        <b style="font-size:13px">申請退貨</b>
+        <textarea id="ret-reason" rows="2" placeholder="退貨原因（必填）"></textarea>
+        <button class="w95-btn" id="ret-btn" style="margin-top:6px">送出退貨申請</button>
+        <p id="ret-msg"></p>
+      </div>
+    </div>
+    <a class="back" href="index.html">← 回到店裡</a>
+  </div>
+</div>
+<script src="js/config.js"></script>
+<script src="js/backend.js"></script>
+<script src="js/track.js"></script>
+</body>
+</html>

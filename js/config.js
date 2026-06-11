@@ -68,3 +68,10 @@ window.SCENE.shop = {
      填入後訂單成立會自動寄信到店主信箱；留空則只有買家手動寄信/複製。 */
   web3formsKey: ""
 };
+
+/* 訂單後台資料層：
+   留空 = demo 模式（localStorage，同一瀏覽器內可玩完整後台流程）。
+   接 Supabase（免費）：建專案 → SQL Editor 跑 supabase/schema.sql →
+   Settings 拿 Project URL 與 anon public key 填這裡 →
+   Authentication 建店主帳號（email+密碼）→ admin.html 登入。 */
+window.SCENE.backend = { url: "", anonKey: "" };

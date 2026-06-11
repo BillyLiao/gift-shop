@@ -135,6 +135,9 @@ window.Cart = (function () {
           '<button type="button" class="w95-btn" id="order-mail">✉️ 寄訂單給店主</button>' +
           '<button type="button" class="w95-btn primary" id="done-close">回到店裡</button>' +
         '</div>' +
+        '<p class="cart-hint" style="text-align:right;margin-top:8px">' +
+          '之後可到 <a href="track.html" target="_blank">訂單查詢頁</a> 追蹤出貨／申請退貨' +
+        '</p>' +
       '</div>' +
     '</div>';
   document.body.appendChild(win);
@@ -399,6 +402,21 @@ window.Cart = (function () {
     orderNoEl.textContent = no;
     orderTextEl.value = lines.join("\n");
     notifyShop(no, lines.join("\n"), info);
+
+    /* 寫入訂單資料層（local demo 或 Supabase 雲端，見 js/backend.js） */
+    if (window.Backend) {
+      window.Backend.createOrder({
+        no: no, created: new Date().toISOString(),
+        items: items.map(function (i) {
+          return { id: i.id, name: i.name, price: i.price, qty: i.qty };
+        }),
+        subtotal: total(), fee: info.fee || 0, total: grand,
+        pay: info.pay, ship: info.ship, store: info.store || "",
+        addr: info.addr || "", name: info.name, email: info.email,
+        phone: info.phone || "", note: info.note || "",
+        status: "待處理", tracking: "", return_reason: "",
+      });
+    }
 
     /* 信用卡 → 綠界測試環境（新分頁）；貨到付款 → 直接成立 */
     var doneHint = win.querySelector("#cart-view-done .cart-hint");
