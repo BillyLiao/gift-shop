@@ -75,6 +75,18 @@
   t('門市自動帶入', f.store.value === '台北車站門市 (141234)');
   t('711 按鈕文案', document.getElementById('store-map').textContent.indexOf('自動帶入') >= 0);
 
+
+  // 店主登場
+  document.getElementById('hs-door').click();
+  var aw = document.getElementById('artist-wrap');
+  t('店主出現', aw && aw.classList.contains('show'));
+  var line1 = aw.querySelector('.ab-text').textContent;
+  aw.click();
+  t('台詞輪播', aw.querySelector('.ab-text').textContent !== line1);
+  t('店主名字', aw.querySelector('.ab-name').textContent === '陳念瑩');
+  // 白貴賓狗反轉
+  t('貴賓狗 180 反轉', document.getElementById('gif-poodle').style.transform === 'scaleX(-1)');
+
   document.getElementById('result').textContent = R.join('\n');
   document.title = R.filter(function(r){return r.indexOf('FAIL')===0;}).length + '-FAILS';
 })();

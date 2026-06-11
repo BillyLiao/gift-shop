@@ -41,8 +41,10 @@
       el.draggable = false;
     }
     el.className = "item " +
-      (o.role === "product" ? "product" : o.role === "info" ? "info" : "prop") +
+      (o.role === "product" ? "product" :
+       o.role === "info" || o.role === "artist" ? "info" : "prop") +
       (o.hotspot ? " hotspot" : "") +
+      (o.role === "artist" ? " artist-door" : "") +
       (o.role === "prop" && o.tip ? " tipped" : "");
     el.id = o.id;
     el.style.left = o.x + "px";
@@ -50,15 +52,17 @@
     el.style.width = o.w + "px";
     if (o.h) el.style.height = o.h + "px";
     if (o.z !== undefined) el.style.zIndex = o.z;
+    if (o.flip) el.style.transform = "scaleX(-1)";
 
     var interactive = o.role === "product" || o.role === "info" ||
-      (o.role === "prop" && o.tip);
+      o.role === "artist" || (o.role === "prop" && o.tip);
     if (interactive) {
       el.addEventListener("mouseenter", function () { showTooltip(o); });
       el.addEventListener("mousemove", moveTooltip);
       el.addEventListener("mouseleave", hideTooltip);
       el.addEventListener("click", function (e) {
         if (o.role === "product") { openDialog(o); return; }
+        if (o.role === "artist") { hideTooltip(); toggleArtist(); return; }
         /* 擺設／家具：點擊也跳幽默說明（手機沒有 hover） */
         showTooltip(o);
         positionTooltipAt(e.clientX, e.clientY);
@@ -199,7 +203,71 @@
     if (e.key === "Escape") closeDialog();
   });
 
+  /* ---- 店主登場（點大門）---- */
+
+  var artistCfg = scene.artist || null;
+  var artistWrap = null;
+  var artistLineIdx = -1;
+  var artistBubble = null;
+
+  function buildArtist() {
+    artistWrap = document.createElement("div");
+    artistWrap.id = "artist-wrap";
+    artistWrap.style.left = artistCfg.x + "px";
+    artistWrap.style.top = artistCfg.y + "px";
+    artistWrap.style.height = artistCfg.h + "px";
+
+    var img = document.createElement("img");
+    img.id = "artist-char";
+    img.src = artistCfg.img;
+    img.alt = artistCfg.name;
+    img.draggable = false;
+    artistWrap.appendChild(img);
+
+    artistBubble = document.createElement("div");
+    artistBubble.id = "artist-bubble";
+    artistBubble.innerHTML =
+      '<b class="ab-name"></b><span class="ab-text"></span>' +
+      '<i class="ab-more">點我繼續說 ▸</i>';
+    artistBubble.querySelector(".ab-name").textContent = artistCfg.name;
+    artistWrap.appendChild(artistBubble);
+
+    artistWrap.addEventListener("click", function (e) {
+      e.stopPropagation();
+      nextArtistLine();
+    });
+    stage.appendChild(artistWrap);
+  }
+
+  function nextArtistLine() {
+    artistLineIdx = (artistLineIdx + 1) % artistCfg.lines.length;
+    artistBubble.querySelector(".ab-text").textContent =
+      artistCfg.lines[artistLineIdx];
+  }
+
+  function toggleArtist() {
+    if (!artistCfg) return;
+    if (!artistWrap) buildArtist();
+    if (artistWrap.classList.contains("show")) {
+      artistWrap.classList.remove("show");
+      return;
+    }
+    nextArtistLine();
+    artistWrap.classList.add("show");
+  }
+
+  document.addEventListener("click", function (e) {
+    /* 點場景其他地方收回店主 */
+    if (artistWrap && artistWrap.classList.contains("show") &&
+        !artistWrap.contains(e.target) &&
+        !(e.target.classList && e.target.classList.contains("artist-door"))) {
+      artistWrap.classList.remove("show");
+    }
+  });
+
   /* ---- QA：?hover=id1,id2 模擬 hover；?demo=1 展示 ---- */
+
+  if (params.get("artist") === "1") toggleArtist();
 
   var hoverIds = params.get("hover");
   if (hoverIds) {

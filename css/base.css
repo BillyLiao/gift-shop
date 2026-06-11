@@ -40,6 +40,46 @@ html, body {
 
 /* 固定家具的說明熱區：透明、只出 tooltip */
 .item.info { cursor: help; }
+.item.artist-door { cursor: pointer; }
+
+/* ---- 店主登場 ---- */
+#artist-wrap {
+  position: absolute;
+  z-index: 900;
+  display: none;
+  cursor: pointer;
+}
+#artist-wrap.show { display: block; animation: artist-in .45s steps(4, end); }
+@keyframes artist-in {
+  0%   { transform: translateY(40px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+#artist-char { height: 100%; display: block; filter: drop-shadow(2px 4px 6px rgba(0,0,0,.35)); }
+#artist-bubble {
+  position: absolute;
+  left: 78%;
+  top: -8%;
+  width: 240px;
+  background: #fffef2;
+  border: 2px solid #111;
+  box-shadow: 3px 3px 0 #111;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+#artist-bubble::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 38px;
+  border: 8px solid transparent;
+  border-right-color: #111;
+}
+#artist-bubble .ab-name { display: block; color: #7c4d96; margin-bottom: 2px; }
+#artist-bubble .ab-text { display: block; }
+#artist-bubble .ab-more { display: block; text-align: right; color: #999; font-size: 11px; margin-top: 6px; font-style: normal; }
 
 .item.product { cursor: pointer; }
 
