@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>禮品店 · smoke test</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+<div id="stage-wrap">
+  <div id="stage"></div>
+</div>
+<script>
+window.OBJECTS = [
+  { id: "pink-sofa", name: "鮭粉沙發", x: 263, y: 376, w: 295, h: 183, anim: "breathe", dur: "2.5s", delay: "0.2s", z: 5, tag: "肉感沙發 NT$3,500" },
+  { id: "fish-tank", name: "魚缸", x: 1169, y: 371, w: 193, h: 99, anim: "swim", dur: "6s", delay: "0s", z: 6, tag: "活的 NT$999", inner: { x: 1190, y: 400, w: 80, h: 40 } },
+  { id: "welcome-mat", name: "歡迎地毯", x: 536, y: 665, w: 127, h: 52, anim: "blink", dur: "3s", delay: "1s", z: 4, tag: "WELCOME NT$250" },
+];
+</script>
+<script src="js/main.js"></script>
+</body>
+</html>

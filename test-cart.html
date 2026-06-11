@@ -1,0 +1,81 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="css/base.css"></head>
+<body><div id="stage-wrap"><div id="stage"></div></div><pre id="result"></pre>
+<script src="js/config.js"></script><script src="js/main.js"></script><script src="js/pay.js"></script><script src="js/cart.js"></script>
+<script>
+(function(){
+  var R = [];
+  function t(name, cond){ R.push((cond ? 'PASS' : 'FAIL') + ' ' + name); }
+  localStorage.removeItem('giftshop-cart-v1');
+  var P = window.SCENE.items.filter(function(o){return o.role==='product' && o.price;});
+  var NP = window.SCENE.items.filter(function(o){return o.role==='product' && !o.price;})[0];
+
+  Cart.add(P[0]); Cart.add(P[0]); Cart.add(P[1]); Cart.add(NP);
+  t('count=4', Cart.count() === 4);
+  var sub = P[0].price*2 + P[1].price*1;
+
+  Cart.open('list');
+  document.getElementById('cart-checkout').click();
+  var f = document.getElementById('cart-view-checkout').elements;
+
+  // 運費計算
+  t('宅配 fee 60', document.getElementById('fee-total').textContent === 'NT$' + (sub+60));
+  f.ship.value='面交'; f.ship.dispatchEvent(new Event('change'));
+  t('面交免運', document.getElementById('fee-total').textContent === 'NT$' + sub);
+  f.ship.value='7-11 店到店'; f.ship.dispatchEvent(new Event('change'));
+  t('711 fee 60', document.getElementById('fee-total').textContent === 'NT$' + (sub+60));
+  t('711 顯示門市欄', document.getElementById('store-row').style.display !== 'none');
+
+  // 超商必填門市
+  f.name.value='測試'; f.email.value='a@b.tw';
+  document.getElementById('checkout-submit').click();
+  t('門市必填擋下', document.getElementById('checkout-error').textContent.indexOf('門市') >= 0);
+
+  // 貨到付款完單
+  f.store.value='台北車站門市 (123456)'; f.pay.value='貨到付款';
+  document.getElementById('checkout-submit').click();
+  var ot = document.getElementById('order-text').value;
+  t('訂單含運費60', ot.indexOf('運費（買家負擔）：NT$60') >= 0);
+  t('訂單含總計', ot.indexOf('總計：NT$' + (sub+60)) >= 0);
+  t('訂單含付款方式', ot.indexOf('付款方式：貨到付款') >= 0);
+  t('訂單含門市', ot.indexOf('7-11 店到店／台北車站門市') >= 0);
+  t('COD hint', document.querySelector('#cart-view-done .cart-hint').textContent.indexOf('貨到付款') >= 0);
+  t('cart cleared', Cart.count() === 0);
+
+  // 信用卡路徑（spy 掉真正跳轉）
+  var spied = null;
+  Pay.ecpayCheckout = function(o){ spied = o; };
+  Cart.add(P[0]); Cart.open('list');
+  document.getElementById('cart-checkout').click();
+  f.name.value='測試'; f.email.value='a@b.tw'; f.ship.value='宅配'; f.ship.dispatchEvent(new Event('change'));
+  f.addr.value='台北市某路1號'; f.pay.value='信用卡';
+  document.getElementById('checkout-submit').click();
+  t('ECPay called', !!spied);
+  t('ECPay total = 小計+60', spied && spied.total === +P[0].price + 60);
+  t('ECPay tradeNo alnum ≤20', spied && /^[A-Za-z0-9]{1,20}$/.test(spied.tradeNo));
+  t('ECPay itemName 含運費', spied && spied.itemName.indexOf('運費') >= 0);
+  t('credit hint', document.querySelector('#cart-view-done .cart-hint').textContent.indexOf('綠界') >= 0);
+
+  // 幽默 tooltip（info 熱區）
+  var hs = document.getElementById('hs-shelf');
+  hs.dispatchEvent(new MouseEvent('mouseenter'));
+  var tt = document.getElementById('tooltip');
+  t('info tooltip 名稱', tt.querySelector('.tt-name').textContent === '葫蘆多寶格');
+  t('info tooltip 幽默文', tt.querySelector('.tt-tip').textContent.indexOf('架不賣') >= 0);
+  // prop tip
+  var pr = document.getElementById('gif-printer');
+  pr.dispatchEvent(new MouseEvent('mouseenter'));
+  t('prop tooltip', tt.querySelector('.tt-tip').textContent.indexOf('勿動') >= 0);
+
+
+  // 門市自動回填（模擬 store-callback postMessage）
+  Cart.add(P[0]); Cart.open('list');
+  document.getElementById('cart-checkout').click();
+  f.ship.value='7-11 店到店'; f.ship.dispatchEvent(new Event('change'));
+  window.dispatchEvent(new MessageEvent('message', {data:{type:'giftshop-store-pick', store:{name:'台北車站門市', code:'141234'}}}));
+  t('門市自動帶入', f.store.value === '台北車站門市 (141234)');
+  t('711 按鈕文案', document.getElementById('store-map').textContent.indexOf('自動帶入') >= 0);
+
+  document.getElementById('result').textContent = R.join('\n');
+  document.title = R.filter(function(r){return r.indexOf('FAIL')===0;}).length + '-FAILS';
+})();
+</script></body></html>

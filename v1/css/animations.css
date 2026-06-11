@@ -1,0 +1,387 @@
+/* ==========================================================================
+   animations.css — 老網頁 animated GIF 質感動畫類別庫
+   台灣老式禮品店拼貼 / gift-shop collage
+
+   約定：
+   - 每個物件 div.obj.anim-<名>，行內 CSS 變數 --dur / --delay / --glow
+   - 所有類別：duration = calc(var(--dur, 2s) * var(--spd, 1))
+   - 全部 steps(N, end)，N=2–6（spin 8）——逐格低幀，禁止滑順曲線
+   - 位移紅線：±3px / ±2deg / scale ±2%（spin 例外）
+   - keyframe 走 8 格思維：0 / 12.5 / 25 / 37.5 / 50 / 62.5 / 75 / 87.5 / 100
+   - 數值刻意不對稱（左 1.5 右 1.2 之類），像手工逐格 GIF
+   ========================================================================== */
+
+/* hover＝動畫開關：動畫類別只在 .obj:hover / .demo-hover 時生效（見下方選擇器）。
+   點擊前全靜態，這是設計要求。 */
+
+/* hover 提神：只給「位移通道」的類別加 saturate。
+   濾鏡通道（flicker/glow/shimmer/blink/twinkle）自己在動 filter，
+   這裡加了會蓋掉原動畫，所以排除。 */
+.obj.anim-wobble:hover,  .obj.anim-wobble.demo-hover,
+.obj.anim-float:hover,   .obj.anim-float.demo-hover,
+.obj.anim-swing:hover,   .obj.anim-swing.demo-hover,
+.obj.anim-bounce:hover,  .obj.anim-bounce.demo-hover,
+.obj.anim-sway:hover,    .obj.anim-sway.demo-hover,
+.obj.anim-spin:hover,    .obj.anim-spin.demo-hover,
+.obj.anim-rock:hover,    .obj.anim-rock.demo-hover,
+.obj.anim-breathe:hover, .obj.anim-breathe.demo-hover,
+.obj.anim-shake:hover,   .obj.anim-shake.demo-hover {
+  filter: saturate(1.15);
+}
+
+/* ==========================================================================
+   位移通道（振幅硬上限 ±3px / ±2deg / scale ±2%）
+   ========================================================================== */
+
+/* ---- wobble：歪頭。左 -1.5deg、右只到 1.2deg，不對稱 ---- */
+.obj:hover.anim-wobble,
+.obj:hover .anim-wobble,
+.obj.demo-hover.anim-wobble,
+.obj.demo-hover .anim-wobble {
+  animation-name: kf-wobble;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(2, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-wobble {
+  0%    { transform: rotate(-1.5deg); }
+  25%   { transform: rotate(.5deg); }
+  37.5% { transform: rotate(1.2deg); }
+  62.5% { transform: rotate(.8deg); }
+  75%   { transform: rotate(-.6deg); }
+  100%  { transform: rotate(-1.5deg); }
+}
+
+/* ---- float：漂浮。上 -3px、下只到 1.5px，浮力不均 ---- */
+.obj:hover.anim-float,
+.obj:hover .anim-float,
+.obj.demo-hover.anim-float,
+.obj.demo-hover .anim-float {
+  animation-name: kf-float;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(2, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-float {
+  0%    { transform: translateY(0); }
+  25%   { transform: translateY(-3px); }
+  37.5% { transform: translateY(-2px); }
+  50%   { transform: translateY(-3px); }
+  75%   { transform: translateY(1.5px); }
+  87.5% { transform: translateY(.5px); }
+  100%  { transform: translateY(0); }
+}
+
+/* ---- swing：掛畫鐘擺。頂部吊點，左 -2deg 右 1.6deg ---- */
+.obj:hover.anim-swing,
+.obj:hover .anim-swing,
+.obj.demo-hover.anim-swing,
+.obj.demo-hover .anim-swing {
+  transform-origin: top center;
+  animation-name: kf-swing;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(3, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-swing {
+  0%    { transform: rotate(-2deg); }
+  37.5% { transform: rotate(1.6deg); }
+  50%   { transform: rotate(1.2deg); }
+  87.5% { transform: rotate(-1.7deg); }
+  100%  { transform: rotate(-2deg); }
+}
+
+/* ---- bounce：彈跳。頂點 -3px，落地壓扁 scaleY(.98) squash ---- */
+.obj:hover.anim-bounce,
+.obj:hover .anim-bounce,
+.obj.demo-hover.anim-bounce,
+.obj.demo-hover .anim-bounce {
+  transform-origin: bottom center;
+  animation-name: kf-bounce;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(2, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-bounce {
+  0%    { transform: translateY(0) scaleY(1); }
+  12.5% { transform: translateY(-1.5px) scaleY(1.01); }
+  25%   { transform: translateY(-3px) scaleY(1); }
+  37.5% { transform: translateY(-1px) scaleY(1); }
+  50%   { transform: translateY(0) scaleY(.98); }   /* 落地壓扁 */
+  62.5% { transform: translateY(0) scaleY(1); }
+  75%   { transform: translateY(-2px) scaleY(1); }  /* 第二跳較矮，不對稱 */
+  87.5% { transform: translateY(0) scaleY(.99); }
+  100%  { transform: translateY(0) scaleY(1); }
+}
+
+/* ---- sway：衣物裙襬。頂部固定，skewX 左 -2deg 右 1.5deg ---- */
+.obj:hover.anim-sway,
+.obj:hover .anim-sway,
+.obj.demo-hover.anim-sway,
+.obj.demo-hover .anim-sway {
+  transform-origin: top center;
+  animation-name: kf-sway;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(3, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-sway {
+  0%    { transform: skewX(-2deg); }
+  25%   { transform: skewX(.5deg); }
+  37.5% { transform: skewX(1.5deg); }
+  62.5% { transform: skewX(1.1deg); }
+  87.5% { transform: skewX(-1.6deg); }
+  100%  { transform: skewX(-2deg); }
+}
+
+/* ---- spin：完整 360deg 逐格（價格標籤等小物件專用，唯一允許大旋轉） ---- */
+.obj:hover.anim-spin,
+.obj:hover .anim-spin,
+.obj.demo-hover.anim-spin,
+.obj.demo-hover .anim-spin {
+  animation-name: kf-spin;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(8, end);  /* 8 格 = 每格 45deg */
+  animation-iteration-count: infinite;
+}
+@keyframes kf-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ---- rock：搖椅。底部支點，前 -2deg 後 1.7deg ---- */
+.obj:hover.anim-rock,
+.obj:hover .anim-rock,
+.obj.demo-hover.anim-rock,
+.obj.demo-hover .anim-rock {
+  transform-origin: bottom center;
+  animation-name: kf-rock;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(3, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-rock {
+  0%    { transform: rotate(-2deg); }
+  37.5% { transform: rotate(1.7deg); }
+  50%   { transform: rotate(1.3deg); }
+  62.5% { transform: rotate(1.7deg); }   /* 後仰多停一格 */
+  87.5% { transform: rotate(-1.5deg); }
+  100%  { transform: rotate(-2deg); }
+}
+
+/* ---- breathe：肉感呼吸。scale 1 ↔ 1.015，吸快吐慢 ---- */
+.obj:hover.anim-breathe,
+.obj:hover .anim-breathe,
+.obj.demo-hover.anim-breathe,
+.obj.demo-hover .anim-breathe {
+  animation-name: kf-breathe;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(2, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-breathe {
+  0%    { transform: scale(1); }
+  25%   { transform: scale(1.015); }
+  37.5% { transform: scale(1.012); }
+  50%   { transform: scale(1.015); }
+  87.5% { transform: scale(1.004); }
+  100%  { transform: scale(1); }
+}
+
+/* ---- shake：快速抖動。左 -1.5px 右 1.2px ---- */
+.obj:hover.anim-shake,
+.obj:hover .anim-shake,
+.obj.demo-hover.anim-shake,
+.obj.demo-hover .anim-shake {
+  animation-name: kf-shake;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(2, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-shake {
+  0%    { transform: translateX(0); }
+  12.5% { transform: translateX(-1.5px); }
+  25%   { transform: translateX(1.2px); }
+  37.5% { transform: translateX(-1.3px); }
+  50%   { transform: translateX(1px); }
+  62.5% { transform: translateX(-.8px); }
+  75%   { transform: translateX(1.2px); }
+  87.5% { transform: translateX(-.5px); }
+  100%  { transform: translateX(0); }
+}
+
+/* ---- swim：魚缸的魚（main.js 生成 .fish div，套在內層）。
+        游 0→56px 折返，折返點 scaleX(-1) 轉身，途中有停頓格 ---- */
+.obj:hover.anim-swim,
+.obj:hover .anim-swim,
+.obj.demo-hover.anim-swim,
+.obj.demo-hover .anim-swim {
+  animation-name: kf-swim;
+  animation-duration: calc(var(--dur, 6s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(4, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-swim {
+  0%    { transform: translateX(0) scaleX(1); }
+  6.25% { transform: translateX(0) scaleX(1); }       /* 起點停一下 */
+  25%   { transform: translateX(34px) scaleX(1); }
+  31.25%{ transform: translateX(34px) scaleX(1); }    /* 半路發呆 */
+  43.75%{ transform: translateX(56px) scaleX(1); }
+  49.9% { transform: translateX(56px) scaleX(1); }    /* 轉身用 0.1% 窗口瞬切，
+                                                         避免 steps 內插出 scaleX(0) 的消失格 */
+  50%   { transform: translateX(56px) scaleX(-1); }   /* 折返點轉身 */
+  56.25%{ transform: translateX(56px) scaleX(-1); }   /* 轉身後再停 */
+  75%   { transform: translateX(20px) scaleX(-1); }
+  93.75%{ transform: translateX(0) scaleX(-1); }
+  99.9% { transform: translateX(0) scaleX(-1); }      /* 同上，回程瞬切 */
+  100%  { transform: translateX(0) scaleX(1); }
+}
+
+/* ==========================================================================
+   濾鏡通道（不動像素，振幅隨意）
+   ========================================================================== */
+
+/* ---- flicker：日光燈閃爍。brightness .85↔1.3，偶格 opacity .8 ---- */
+.obj:hover.anim-flicker,
+.obj:hover .anim-flicker,
+.obj.demo-hover.anim-flicker,
+.obj.demo-hover .anim-flicker {
+  animation-name: kf-flicker;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(2, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-flicker {
+  0%    { filter: brightness(1);    opacity: 1; }
+  12.5% { filter: brightness(.85);  opacity: 1; }
+  25%   { filter: brightness(1.25); opacity: 1; }
+  37.5% { filter: brightness(.9);   opacity: 1; }
+  50%   { filter: brightness(1.3);  opacity: 1; }
+  62.5% { filter: brightness(.95);  opacity: .8; }  /* 偶格半透，接觸不良 */
+  75%   { filter: brightness(1.1);  opacity: 1; }
+  87.5% { filter: brightness(.85);  opacity: 1; }
+  100%  { filter: brightness(1);    opacity: 1; }
+}
+
+/* ---- glow：光暈呼吸。drop-shadow 0→14px，顏色吃 --glow（預設 gold） ---- */
+.obj:hover.anim-glow,
+.obj:hover .anim-glow,
+.obj.demo-hover.anim-glow,
+.obj.demo-hover .anim-glow {
+  animation-name: kf-glow;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(3, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-glow {
+  0%    { filter: drop-shadow(0 0 0 var(--glow, gold))    brightness(1); }
+  25%   { filter: drop-shadow(0 0 6px var(--glow, gold))  brightness(1.06); }
+  37.5% { filter: drop-shadow(0 0 10px var(--glow, gold)) brightness(1.1); }
+  50%   { filter: drop-shadow(0 0 14px var(--glow, gold)) brightness(1.18); }
+  62.5% { filter: drop-shadow(0 0 11px var(--glow, gold)) brightness(1.12); }
+  87.5% { filter: drop-shadow(0 0 4px var(--glow, gold))  brightness(1.03); }
+  100%  { filter: drop-shadow(0 0 0 var(--glow, gold))    brightness(1); }
+}
+
+/* ---- shimmer：水光/虹彩。hue-rotate 0→22deg＋saturate 脈動（魚缸缸體） ---- */
+.obj:hover.anim-shimmer,
+.obj:hover .anim-shimmer,
+.obj.demo-hover.anim-shimmer,
+.obj.demo-hover .anim-shimmer {
+  animation-name: kf-shimmer;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(3, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-shimmer {
+  0%    { filter: hue-rotate(0deg)   saturate(1); }
+  25%   { filter: hue-rotate(10deg)  saturate(1.25); }
+  37.5% { filter: hue-rotate(22deg)  saturate(1.1); }
+  50%   { filter: hue-rotate(16deg)  saturate(1.35); }
+  75%   { filter: hue-rotate(6deg)   saturate(1.05); }
+  87.5% { filter: hue-rotate(14deg)  saturate(1.2); }
+  100%  { filter: hue-rotate(0deg)   saturate(1); }
+}
+
+/* ---- blink：霓虹明滅。opacity 1↔.55，節奏不規則 ---- */
+.obj:hover.anim-blink,
+.obj:hover .anim-blink,
+.obj.demo-hover.anim-blink,
+.obj.demo-hover .anim-blink {
+  animation-name: kf-blink;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(2, end);
+  animation-iteration-count: infinite;
+}
+/* 注意：sprite 底下是一模一樣的背景像素，opacity 變淡＝跟自己混合，
+   視覺上看不見。霓虹明滅必須走 filter 通道。 */
+@keyframes kf-blink {
+  0%    { filter: brightness(1.35) drop-shadow(0 0 6px var(--glow, gold)); }
+  12.5% { filter: brightness(.6); }
+  25%   { filter: brightness(1.35) drop-shadow(0 0 6px var(--glow, gold)); }
+  50%   { filter: brightness(1.35) drop-shadow(0 0 6px var(--glow, gold)); }    /* 亮著撐久一點 */
+  62.5% { filter: brightness(.6); }
+  75%   { filter: brightness(.6); }  /* 暗也拖一格，像快壞的霓虹 */
+  87.5% { filter: brightness(1.35) drop-shadow(0 0 6px var(--glow, gold)); }
+  100%  { filter: brightness(1.35) drop-shadow(0 0 6px var(--glow, gold)); }
+}
+
+/* ---- twinkle：星芒。90% 前平靜微亮，90–100% 短促白閃 ---- */
+.obj:hover.anim-twinkle,
+.obj:hover .anim-twinkle,
+.obj.demo-hover.anim-twinkle,
+.obj.demo-hover .anim-twinkle {
+  animation-name: kf-twinkle;
+  animation-duration: calc(var(--dur, 2s) * var(--spd, 1));
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: steps(2, end);
+  animation-iteration-count: infinite;
+}
+@keyframes kf-twinkle {
+  0%    { filter: brightness(1); }
+  37.5% { filter: brightness(1.04); }   /* 平靜段一點點呼吸 */
+  75%   { filter: brightness(.98); }
+  90%   { filter: brightness(1); }
+  92%   { filter: brightness(2.1) saturate(.6); }  /* 白閃 */
+  96%   { filter: brightness(1.5) saturate(.8); }
+  100%  { filter: brightness(1); }
+}
+
+/* ==========================================================================
+   互動
+   ========================================================================== */
+
+/* ---- burst：一次性點擊爆發（main.js 點擊時加上、動畫結束移除）。
+        不 infinite、不吃 --dur，固定 0.5s 三格爆 ---- */
+.burst {
+  animation: kf-burst .5s steps(3, end) 1 both !important;
+}
+@keyframes kf-burst {
+  0%    { transform: scale(1);    filter: brightness(1); }
+  25%   { transform: scale(1.12); filter: brightness(1.6); }  /* 白閃放大 */
+  62.5% { transform: scale(1.05); filter: brightness(1.25); }
+  100%  { transform: scale(1);    filter: brightness(1); }
+}
+
+/* ==========================================================================
+   無障礙：使用者要求減少動態時全部關閉
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .obj, .obj * {
+    animation: none !important;
+  }
+}

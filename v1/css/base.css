@@ -1,0 +1,206 @@
+/* base.css — 版面、.obj 基底、tooltip、Win95 dialog、static/demo 規則
+   動畫 keyframe 一律在 animations.css（Animator 負責），此處不寫。 */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #1a1418;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: "Microsoft JhengHei", "PingFang TC", "Heiti TC", sans-serif;
+}
+
+/* ---- stage ---- */
+
+#stage-wrap {
+  position: relative;
+  width: 100%;
+}
+
+#stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1408px;
+  height: 724px;
+  transform-origin: top left;
+  background: url("../assets/original.png") no-repeat 0 0;
+  background-size: 1408px 724px;
+}
+
+/* ---- objects ---- */
+
+.obj {
+  position: absolute;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.obj:hover,
+.obj.demo-hover {
+  outline: 2px dashed #ffe14d;
+  outline-offset: 2px;
+}
+
+/* 魚缸內層魚 sprite */
+.obj-inner {
+  position: absolute;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* ---- retro tooltip ---- */
+
+#tooltip {
+  position: fixed;
+  z-index: 9000;
+  display: none;
+  max-width: 280px;
+  padding: 6px 10px;
+  background: #ffe14d;
+  color: #000;
+  border: 3px solid #000;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.55);
+  font-size: 14px;
+  line-height: 1.45;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+#tooltip.show { display: block; }
+
+#tooltip .tt-name {
+  font-weight: bold;
+  display: block;
+}
+
+#tooltip .tt-tag {
+  display: block;
+  font-size: 12px;
+}
+
+/* demo 模式的固定位置 tooltip */
+#tooltip.demo-fixed {
+  display: block;
+  left: 40px;
+  top: 40px;
+}
+
+/* ---- Win95 dialog ---- */
+
+#dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: none;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+#dialog-overlay.open { display: block; }
+
+#win-dialog {
+  position: fixed;
+  z-index: 9600;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 360px;
+  max-width: 90vw;
+  display: none;
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #404040;
+  border-bottom: 2px solid #404040;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.4);
+  font-size: 14px;
+  color: #000;
+}
+
+#win-dialog.open { display: block; }
+
+#win-dialog .dlg-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 4px 3px 8px;
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #fff;
+  font-weight: bold;
+  user-select: none;
+}
+
+#win-dialog .dlg-close {
+  width: 20px;
+  height: 18px;
+  padding: 0;
+  line-height: 14px;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: inherit;
+  color: #000;
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #404040;
+  border-bottom: 2px solid #404040;
+  cursor: pointer;
+}
+
+#win-dialog .dlg-close:active {
+  border-top: 2px solid #404040;
+  border-left: 2px solid #404040;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+}
+
+#win-dialog .dlg-body {
+  padding: 14px 16px 18px;
+}
+
+#win-dialog .dlg-tag {
+  margin: 0 0 12px;
+  font-weight: bold;
+}
+
+#win-dialog .dlg-placeholder {
+  margin: 0;
+  padding: 18px 10px;
+  text-align: center;
+  color: #555;
+  background: #ffffff;
+  border-top: 2px solid #404040;
+  border-left: 2px solid #404040;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+}
+
+/* ---- static 模式：全部凍結，逐像素回到原圖 ---- */
+
+.static .obj,
+.static .obj * {
+  animation: none !important;
+  transform: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+.static .obj,
+.static .obj.demo-hover,
+.static .obj:hover {
+  outline: none !important;
+}
+
+.static #tooltip { display: none !important; }
+
+/* ---- reduced motion：全停 ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  .obj,
+  .obj * {
+    animation: none !important;
+    transform: none !important;
+  }
+}
