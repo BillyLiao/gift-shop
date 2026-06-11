@@ -359,9 +359,27 @@ html, body {
 }
 .cart-hint { font-size: 12px; color: #555; margin: 4px 0 8px; }
 
-#store-row { display: flex; align-items: flex-end; gap: 8px; margin: 8px 0; }
+#store-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin: 8px 0; }
 #store-row label { flex: 1; margin: 0; }
-#store-row .w95-btn { white-space: nowrap; margin-bottom: 2px; }
+#store-row > .w95-btn { white-space: nowrap; margin-bottom: 2px; }
+
+/* 站內門市選擇器 */
+#store-picker { display: none; flex-basis: 100%; background: #fff; border: 2px inset #808080; padding: 8px; }
+#store-picker.open { display: block; }
+#store-picker .sp-bar { display: flex; gap: 6px; margin-bottom: 6px; }
+#store-picker select, #store-picker input {
+  border: 2px inset #808080; background: #fff; font-family: inherit; font-size: 13px; padding: 3px 5px;
+}
+#store-picker #sp-county { width: 92px; }
+#store-picker #sp-district { width: 110px; }
+#store-picker #sp-kw { flex: 1; min-width: 0; }
+#sp-list {
+  list-style: none; margin: 0; padding: 0;
+  max-height: 180px; overflow-y: auto; border: 1px solid #a0a0a0;
+}
+#sp-list li { padding: 4px 8px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #eee; }
+#sp-list li:hover { background: #000080; color: #fff; }
+#store-picker .cart-hint { margin: 6px 0 0; }
 
 #fee-summary {
   display: flex;

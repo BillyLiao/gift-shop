@@ -103,7 +103,7 @@ window.Cart = (function () {
         '<div id="store-row" style="display:none">' +
           '<label><span id="store-label">門市名稱／店號 *</span>' +
             '<input name="store" type="text" placeholder="例：台北車站門市 (123456)"></label>' +
-          '<button type="button" class="w95-btn sm" id="store-map">🗺 查門市地圖</button>' +
+          '<button type="button" class="w95-btn sm" id="store-map">🗺 選擇門市</button>' +
         '</div>' +
         '<label id="addr-label">地址 *<input name="addr" type="text" autocomplete="street-address"></label>' +
         '<label>付款方式<select name="pay">' +
@@ -205,47 +205,112 @@ window.Cart = (function () {
   /* ---- 結帳畫面 ---- */
   var SHIP_FEE = { "宅配": 60, "7-11 店到店": 60, "全家 店到店": 60, "面交": 0 };
 
-  /* 門市地圖：
-     7-11 → ezShip 電子地圖，支援 rtURL GET 回拋 → store-callback.html → 自動帶入欄位
-            （需以 http(s) 開站才能回拋；file:// 直開時退回手填）
-     全家 → 官方地圖只能查詢（回拋需後端），手填門市 */
-  var STORE_MAP = {
-    "7-11 店到店": { auto: true },
-    "全家 店到店": { auto: false, url: "https://www.family.com.tw/Marketing/storemap" },
-  };
+  /* 站內門市選擇器：政府開放資料（全國超商分公司）內建成 assets/data/stores.js，
+     縣市→區→關鍵字過濾，選了直接填入。不依賴外部地圖回拋（靜態主機收不了 POST），
+     file:// 本機直開也能用。正式接物流商後可換成官方電子地圖（需後端）。 */
+  var STORE_MAP = { "7-11 店到店": "7-11", "全家 店到店": "全家" };
+
+  var picker = document.createElement("div");
+  picker.id = "store-picker";
+  picker.innerHTML =
+    '<div class="sp-bar">' +
+      '<select id="sp-county"></select>' +
+      '<select id="sp-district"></select>' +
+      '<input id="sp-kw" type="text" placeholder="路名關鍵字">' +
+      '<button type="button" class="w95-btn sm" id="sp-close">✕</button>' +
+    '</div>' +
+    '<ul id="sp-list"></ul>' +
+    '<p class="cart-hint" id="sp-note"></p>';
+  win.querySelector("#store-row").appendChild(picker);
+
+  var spCounty = picker.querySelector("#sp-county");
+  var spDist = picker.querySelector("#sp-district");
+  var spKw = picker.querySelector("#sp-kw");
+  var spList = picker.querySelector("#sp-list");
+
+  function loadStores(cb) {
+    if (window.CVS_STORES) return cb();
+    var s = document.createElement("script");
+    s.src = "assets/data/stores.js";
+    s.onload = cb;
+    s.onerror = function () {
+      errEl.textContent = "門市資料載入失敗，請手動填寫門市。";
+    };
+    document.head.appendChild(s);
+  }
+
+  function currentChain() { return STORE_MAP[form.elements.ship.value]; }
+
+  function districtsOf(addrs) {
+    var seen = {};
+    addrs.forEach(function (a) {
+      var m = a.match(/^(.{1,3}?[鄉鎮市區])/);
+      if (m) seen[m[1]] = 1;
+    });
+    return Object.keys(seen).sort();
+  }
+
+  function renderPickerList() {
+    var data = window.CVS_STORES[currentChain()] || {};
+    var addrs = data[spCounty.value] || [];
+    var dist = spDist.value, kw = spKw.value.trim();
+    var hits = addrs.filter(function (a) {
+      return (!dist || a.indexOf(dist) === 0) && (!kw || a.indexOf(kw) >= 0);
+    });
+    spList.innerHTML = "";
+    hits.slice(0, 120).forEach(function (a) {
+      var li = document.createElement("li");
+      li.textContent = a;
+      li.addEventListener("click", function () {
+        form.elements.store.value =
+          currentChain() + "（" + spCounty.value + a + "）";
+        errEl.textContent = "";
+        picker.classList.remove("open");
+      });
+      spList.appendChild(li);
+    });
+    picker.querySelector("#sp-note").textContent =
+      hits.length + " 家門市" + (hits.length > 120 ? "（只列前 120，加關鍵字縮小範圍）" : "");
+  }
+
+  function renderPickerSelects() {
+    var data = window.CVS_STORES[currentChain()] || {};
+    spCounty.innerHTML = "";
+    Object.keys(data).sort(function (a, b) {
+      return data[b].length - data[a].length;
+    }).forEach(function (c) {
+      var op = document.createElement("option");
+      op.value = op.textContent = c;
+      spCounty.appendChild(op);
+    });
+    renderPickerDistricts();
+  }
+
+  function renderPickerDistricts() {
+    var data = window.CVS_STORES[currentChain()] || {};
+    spDist.innerHTML = '<option value="">全部區域</option>';
+    districtsOf(data[spCounty.value] || []).forEach(function (d) {
+      var op = document.createElement("option");
+      op.value = op.textContent = d;
+      spDist.appendChild(op);
+    });
+    renderPickerList();
+  }
+
+  spCounty.addEventListener("change", renderPickerDistricts);
+  spDist.addEventListener("change", renderPickerList);
+  spKw.addEventListener("input", renderPickerList);
+  picker.querySelector("#sp-close").addEventListener("click", function () {
+    picker.classList.remove("open");
+  });
 
   function openStorePicker() {
-    var cfg = STORE_MAP[form.elements.ship.value];
-    if (!cfg) return;
-    if (cfg.auto && location.protocol !== "file:") {
-      var cb = new URL("store-callback.html", location.href).href;
-      window.open(
-        "https://map.ezship.com.tw/ezship_map_web_2014.jsp?rtURL=" + encodeURIComponent(cb),
-        "storePicker", "width=1000,height=720");
-    } else if (cfg.auto) {
-      /* file:// 開站：地圖無法回拋，開官方查詢頁手填 */
-      window.open("https://emap.pcsc.com.tw/", "_blank");
-      errEl.textContent = "本機直開無法自動帶入門市（需架在網路上），請查好後手動填寫。";
-    } else {
-      window.open(cfg.url, "_blank");
-    }
+    if (!currentChain()) return;
+    loadStores(function () {
+      renderPickerSelects();
+      picker.classList.add("open");
+    });
   }
-
-  /* 接收回拋（postMessage 即時 / storage 跨分頁備援） */
-  function fillStore(store) {
-    if (!store || (!store.name && !store.code)) return;
-    form.elements.store.value =
-      store.name + (store.code ? " (" + store.code + ")" : "");
-    errEl.textContent = "";
-  }
-  window.addEventListener("message", function (e) {
-    if (e.data && e.data.type === "giftshop-store-pick") fillStore(e.data.store);
-  });
-  window.addEventListener("storage", function (e) {
-    if (e.key === "giftshop-store-pick" && e.newValue) {
-      try { fillStore(JSON.parse(e.newValue).store); } catch (err) {}
-    }
-  });
 
   var form = views.checkout;
   var errEl = win.querySelector("#checkout-error");
@@ -263,10 +328,7 @@ window.Cart = (function () {
     var isCVS = !!cfg;
     storeRow.style.display = isCVS ? "" : "none";
     addrLabel.style.display = isCVS ? "none" : "";
-    if (isCVS) {
-      win.querySelector("#store-map").textContent =
-        cfg.auto ? "🗺 選擇門市（自動帶入）" : "🗺 查門市地圖";
-    }
+    if (!isCVS) picker.classList.remove("open");
     addrLabel.firstChild.textContent =
       form.elements.ship.value === "面交" ? "約定地點 *" : "地址 *";
     payHint.style.display =
@@ -393,6 +455,12 @@ window.Cart = (function () {
     persist(items); renderBadge();
     if (qa === "cart") open("list");
     if (qa === "checkout") open("checkout");
+    if (qa === "store") {
+      open("checkout");
+      form.elements.ship.value = "7-11 店到店";
+      form.elements.ship.dispatchEvent(new Event("change"));
+      openStorePicker();
+    }
     if (qa === "done") {
       finishOrder({ name: "測試人", email: "qa@test.tw", phone: "0912345678",
                     ship: "宅配", addr: "台北市某區某路 1 號", store: "",
