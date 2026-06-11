@@ -1,5 +1,7 @@
 # 歡迎光臨 — 線上禮品店 Portfolio
 
+🔗 **線上版：https://billyliao.github.io/gift-shop/**
+
 用真素材重現《做好ㄉ樣子》：底圖（空店面）＋ 去背 PNG/GIF 疊加。
 GIF 擺設原生會動；商品 hover 放大抖動，點擊開 Win95 相簿視窗看實拍照。
 
